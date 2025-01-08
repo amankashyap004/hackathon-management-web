@@ -1,7 +1,11 @@
+import Layout from "@/components/wrappers/Layout";
+
 export default function Home() {
   return (
-    <div>
-      <p>Home</p>
-    </div>
+    <Layout>
+      <main>
+        <p>Home</p>
+      </main>
+    </Layout>
   );
 }
