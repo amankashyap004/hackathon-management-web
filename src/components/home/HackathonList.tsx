@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import Container from "../wrappers/Container";
 import data from "../../data/data.json";
 import { Hackathon } from "@/types";
@@ -23,8 +22,7 @@ export default function HackathonList() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8 w-full">
         {hackathons.map((hackathon) => (
-          <Link
-            href={`/hackathons/${hackathon.id}`}
+          <div
             key={hackathon.id}
             className="border rounded-md bg-white/5 drop-shadow-md hover:bg-white/10 p-4 transition-all duration-500"
           >
@@ -42,7 +40,7 @@ export default function HackathonList() {
                 </p>
               </div>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </Container>

@@ -1,20 +1,24 @@
 "use client";
 
-import CreateHackathon from "@/components/dashboard/CreateHackathonModal";
-import UserProfile from "@/components/dashboard/UserProfile";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import { Hackathon } from "@/types";
-import data from "../../data/data.json";
 import { useState } from "react";
 import { FaEdit } from "react-icons/fa";
+
+import CreateHackathon from "@/components/dashboard/CreateHackathonModal";
+import UserProfile from "@/components/dashboard/UserProfile";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
+import { Hackathon } from "@/types";
+import data from "../../data/data.json";
 
 export default function DashboardPage() {
   const [hackathons, setHackathons] = useState<Hackathon[]>(
     data as Hackathon[]
   );
-
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [editingHackathon, setEditingHackathon] = useState<Hackathon | null>(
+    null
+  );
 
   const toggleHackathonStatus = (id: string) => {
     setHackathons((prevHackathons) =>
@@ -29,6 +33,25 @@ export default function DashboardPage() {
   const createHackathon = (newHackathon: Hackathon) => {
     setHackathons((prevHackathons) => [...prevHackathons, newHackathon]);
   };
+
+  const editHackathon = (updatedHackathon: Hackathon) => {
+    setHackathons((prevHackathons) =>
+      prevHackathons.map((hackathon) =>
+        hackathon.id === updatedHackathon.id ? updatedHackathon : hackathon
+      )
+    );
+    setEditingHackathon(null);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const filteredHackathons = hackathons.filter(
+    (hackathon) =>
+      hackathon.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hackathon.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-4 lg:p-6 w-full min-h-screen">
@@ -67,17 +90,18 @@ export default function DashboardPage() {
               type="text"
               placeholder="Search hackathons..."
               className="w-full px-4 py-2 border rounded-md"
-              value=""
-              onChange={(e) => console.log(e.target.value)}
+              value={searchTerm}
+              onChange={handleSearchChange}
             />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {hackathons.map((hackathon) => (
+            {filteredHackathons.map((hackathon) => (
               <HackathonCard
                 key={hackathon.id}
                 hackathon={hackathon}
                 onToggle={toggleHackathonStatus}
+                onEdit={() => setEditingHackathon(hackathon)}
               />
             ))}
           </div>
@@ -89,6 +113,15 @@ export default function DashboardPage() {
         onClose={() => setIsModalOpen(false)}
         onCreate={createHackathon}
       />
+
+      {editingHackathon && (
+        <CreateHackathon
+          isOpen={!!editingHackathon}
+          onClose={() => setEditingHackathon(null)}
+          onCreate={editHackathon}
+          hackathon={editingHackathon}
+        />
+      )}
     </div>
   );
 }
@@ -96,9 +129,11 @@ export default function DashboardPage() {
 const HackathonCard = ({
   hackathon,
   onToggle,
+  onEdit,
 }: {
   hackathon: Hackathon;
   onToggle: (id: string) => void;
+  onEdit: () => void;
 }) => {
   return (
     <div className="relative border rounded-md bg-white/5 drop-shadow-md hover:bg-white/10 p-4 transition-all duration-500">
@@ -114,10 +149,7 @@ const HackathonCard = ({
             {hackathon.isActive ? "Deactivate" : "Activate"}
           </button>
 
-          <button
-            onClick={() => console.log("Edit")}
-            className="text-xl lg:text-2xl"
-          >
+          <button onClick={onEdit} className="text-xl lg:text-2xl">
             <FaEdit />
           </button>
         </div>
