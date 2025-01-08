@@ -3,20 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Container from "../wrappers/Container";
-
-interface Hackathon {
-  id: string;
-  title: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-}
+import data from "../../data/data.json";
+import { Hackathon } from "@/types";
 
 export default function HackathonList() {
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
 
   useEffect(() => {
-    setHackathons(dummyHackathons);
+    setHackathons(data as Hackathon[]);
   }, []);
 
   return (
@@ -54,50 +48,3 @@ export default function HackathonList() {
     </Container>
   );
 }
-
-const dummyHackathons: Hackathon[] = [
-  {
-    id: "1",
-    title: "AI Innovation Hackathon",
-    description:
-      "Discover cutting-edge AI solutions and push the boundaries of technology.",
-    startDate: "2023-07-01",
-    endDate: "2023-07-03",
-  },
-  {
-    id: "2",
-    title: "Web3 Blockchain Challenge",
-    description:
-      "Build decentralized applications and explore blockchain technology.",
-    startDate: "2023-08-15",
-    endDate: "2023-08-17",
-  },
-  {
-    id: "3",
-    title: "Tech Sustainability Hack",
-    description: "Create sustainable solutions for a better tomorrow.",
-    startDate: "2023-09-10",
-    endDate: "2023-09-12",
-  },
-  {
-    id: "4",
-    title: "Gaming Revolution Hackathon",
-    description: "Revolutionize the gaming industry with innovative ideas.",
-    startDate: "2023-10-20",
-    endDate: "2023-10-22",
-  },
-  {
-    id: "5",
-    title: "Health Tech Hack",
-    description: "Develop cutting-edge solutions for the healthcare industry.",
-    startDate: "2023-11-05",
-    endDate: "2023-11-07",
-  },
-  {
-    id: "6",
-    title: "FinTech Future Challenge",
-    description: "Innovate in the financial technology space.",
-    startDate: "2023-12-01",
-    endDate: "2023-12-03",
-  },
-];
