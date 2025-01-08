@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Container from "@/components/wrappers/Container";
+import Button from "@/components/ui/Button";
 
 const NotFound = () => {
   return (
@@ -10,11 +11,8 @@ const NotFound = () => {
         <p className="lg:text-xl mb-6">
           Oops! The page you're looking for doesn't exist.
         </p>
-        <Link
-          href="/"
-          className="px-6 py-2.5 lg:py-3 text-white rounded-lg bg-orange-600 hover:bg-orange-700 transition duration-300"
-        >
-          Go Back Home
+        <Link href="/">
+          <Button>Go Back Home</Button>
         </Link>
       </Container>
     </div>
