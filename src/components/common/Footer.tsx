@@ -3,7 +3,7 @@ import Container from "../wrappers/Container";
 
 const Footer = () => {
   return (
-    <footer className="w-full border-t border-gray-800 ">
+    <footer className="w-full border-t border-gray-800 mt-12 lg:mt-16">
       <Container>
         <div className="py-4 text-center text-sm ">
           <p>© {new Date().getFullYear()} All rights reserved.</p>
