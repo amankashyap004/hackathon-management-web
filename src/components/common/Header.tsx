@@ -81,10 +81,14 @@ const Header: React.FC = () => {
           </div>
           <div className="hidden lg:block">
             <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-4">
-              <Button className="uppercase">Login</Button>
-              <Button variant="secondary" className="uppercase">
-                Sign up
-              </Button>
+              <Link href="/login">
+                <Button className="uppercase">Login</Button>
+              </Link>
+              <Link href="/signup">
+                <Button variant="secondary" className="uppercase">
+                  Sign up
+                </Button>
+              </Link>
             </div>
           </div>
           <div className="lg:hidden">
@@ -104,10 +108,14 @@ const Header: React.FC = () => {
             <BrandLogo />
             <NavLinks className="mt-8" />
             <div className="flex flex-col lg:flex-row lg:items-center gap-4 mt-8">
-              <Button className="uppercase">Login</Button>
-              <Button variant="secondary" className="uppercase">
-                Sign up
-              </Button>
+              <Link href="/login">
+                <Button className="uppercase">Login</Button>
+              </Link>
+              <Link href="/signup">
+                <Button variant="secondary" className="uppercase">
+                  Sign up
+                </Button>
+              </Link>
             </div>
 
             <button
