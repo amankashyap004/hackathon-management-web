@@ -28,7 +28,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
     <div className="h-full">
       <section>
         <h2 className="text-xl font-semibold mb-4">User Profile</h2>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 break-words">
           <p>User ID: {user.uid}</p>
           <p>Email: {user.email}</p>
         </div>

@@ -13,8 +13,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("demo1@hackathonmanagementweb.com");
+  const [password, setPassword] = useState("123456");
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -76,6 +76,21 @@ const Login = () => {
             >
               Log In
             </Button>
+
+            <div className="bg-white/10 p-3 rounded-md mt-4 text-xs lg:text-sm">
+              <p>You can use the following demo account for login.</p>
+              <ul className="mt-2 ml-4 list-disc break-words">
+                <li>
+                  Email:{" "}
+                  <span className="font-semibold">
+                    demo1@hackathonmanagementweb.com
+                  </span>
+                </li>
+                <li>
+                  Password: <span className="font-semibold">123456</span>
+                </li>
+              </ul>
+            </div>
           </form>
         </div>
       </Container>

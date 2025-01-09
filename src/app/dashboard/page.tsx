@@ -21,11 +21,9 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
+import { formatDate } from "@/utils/dateUtils";
 
 export default function DashboardPage() {
-  // const [hackathons, setHackathons] = useState<Hackathon[]>(
-  //   data as Hackathon[]
-  // );
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -65,8 +63,6 @@ export default function DashboardPage() {
       console.error("Error fetching hackathons:", error);
     }
   };
-
-  // console.log("Hackathons:", hackathons);
 
   const createHackathon = async (newHackathon: Hackathon) => {
     try {
@@ -244,10 +240,10 @@ const HackathonCard = ({
       <p className="mt-2 text-sm lg:text-base">{hackathon.description}</p>
       <div className="flex justify-between gap-2 mt-4 text-xs lg:text-base">
         <p className="px-3 lg:px-4 py-2 rounded-md bg-green-900">
-          Start: {hackathon.startDate}
+          Start: {formatDate(hackathon.startDate) || ""}
         </p>
         <p className="px-3 lg:px-4 py-2 rounded-md bg-red-900">
-          End: {hackathon.endDate}
+          End: {formatDate(hackathon.endDate) || ""}
         </p>
       </div>
     </div>
