@@ -18,10 +18,10 @@ const Hero = () => {
             Streamline your hackathon experience and unlock innovation.
           </p>
           <div className="flex flex-col lg:flex-row justify-center items-center gap-4 w-full mt-4 lg:mt-8">
-            <Link href="/" className="w-full lg:w-auto">
+            <Link href="#hackathons-list" className="w-full lg:w-auto">
               <Button>Discover Hackathons</Button>
             </Link>
-            <Link href="/" className="w-full lg:w-auto">
+            <Link href="/login" className="w-full lg:w-auto">
               <Button variant="secondary">Create Hackathon</Button>
             </Link>
           </div>

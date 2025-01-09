@@ -2,27 +2,37 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import Layout from "@/components/wrappers/Layout";
 import Container from "@/components/wrappers/Container";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const formData = {
-      email,
-      password,
-    };
 
-    if (!formData) {
-      setError("Invalid email or password");
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/dashboard");
+      console.log("User logged in successfully");
+    } catch (error) {
+      console.error("Error logging in:", error);
     }
   };
 

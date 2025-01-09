@@ -2,17 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 
 import Layout from "@/components/wrappers/Layout";
 import Container from "@/components/wrappers/Container";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +28,15 @@ const Signup = () => {
       return;
     }
 
-    console.log(email, password);
+    // console.log(email, password);
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      router.push('/dashboard');
+      console.log('User signed up successfully');
+    } catch (error) {
+      console.error('Error signing up:', error);
+    }
   };
 
   return (
