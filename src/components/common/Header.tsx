@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { IoClose, IoMenu } from "react-icons/io5";
-
+import { useAuthContext } from "@/contexts/AuthContext";
 import Container from "../wrappers/Container";
 import Button from "../ui/Button";
 
@@ -78,18 +78,11 @@ const Header: React.FC = () => {
           <div className="hidden lg:block">
             <NavLinks />
           </div>
+
           <div className="hidden lg:block">
-            <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-4">
-              <Link href="/login">
-                <Button className="uppercase">Login</Button>
-              </Link>
-              <Link href="/signup">
-                <Button variant="secondary" className="uppercase">
-                  Sign up
-                </Button>
-              </Link>
-            </div>
+            <NavButtons />
           </div>
+
           <div className="lg:hidden">
             <button
               className="text-3xl"
@@ -106,16 +99,7 @@ const Header: React.FC = () => {
           <div className="relative w-full h-full p-4 !bg-black drop-shadow-lg">
             <BrandLogo />
             <NavLinks className="mt-8" />
-            <div className="flex flex-col lg:flex-row lg:items-center gap-4 mt-8">
-              <Link href="/login">
-                <Button className="uppercase">Login</Button>
-              </Link>
-              <Link href="/signup">
-                <Button variant="secondary" className="uppercase">
-                  Sign up
-                </Button>
-              </Link>
-            </div>
+            <NavButtons />
 
             <button
               className="absolute top-4 right-4 text-3xl hover:text-[#E16B31]"
@@ -154,3 +138,27 @@ const BrandLogo = () => (
     </div>
   </Link>
 );
+
+const NavButtons = () => {
+  const { user } = useAuthContext();
+  return (
+    <div>
+      {user ? (
+        <Link href="/dashboard">
+          <Button className="uppercase">Dashboard</Button>
+        </Link>
+      ) : (
+        <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-4">
+          <Link href="/login">
+            <Button className="uppercase">Login</Button>
+          </Link>
+          <Link href="/signup">
+            <Button variant="secondary" className="uppercase">
+              Sign up
+            </Button>
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+};

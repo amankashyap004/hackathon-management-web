@@ -3,20 +3,30 @@ import React from "react";
 type InputProps = {
   inputId?: string;
   label?: string;
-  type?: "text" | "email" | "password" | "date";
+  name?: string;
+  type?: "text" | "email" | "password" | "date" | "file";
   placeholder?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
+  accept?: string;
+  disabled?: boolean;
+  value?: string;
+  min?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
 };
 
 const Input = ({
   inputId,
   label,
+  name,
   type = "text",
   placeholder,
+  required,
   value,
   onChange,
+  accept,
+  disabled,
+  min,
   className,
 }: InputProps) => {
   return (
@@ -28,9 +38,14 @@ const Input = ({
       )}
       <input
         id={inputId}
+        name={name}
         placeholder={placeholder}
+        required={required}
+        disabled={disabled}
         type={type}
         value={value}
+        accept={accept}
+        min={min}
         onChange={onChange}
         className={`w-full px-4 py-2.5 outline-none rounded-md border bg-transparent ${className}`}
       />

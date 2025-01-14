@@ -1,48 +1,49 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Container from "../wrappers/Container";
-import { Hackathon } from "@/types";
-
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import Link from "next/link";
 import { PiSpinnerBold } from "react-icons/pi";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { formatDate } from "@/utils/dateUtils";
+import Container from "../wrappers/Container";
+import Input from "../ui/Input";
+import { Hackathon } from "@/types";
 
 export default function HackathonList() {
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
   const [loading, setLoading] = useState(true);
+  // prettier-ignore
+  const [filter, setFilter] = useState<"active" | "upcoming" | "past">("active");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    const fetchActiveHackathons = async () => {
-      try {
-        const q = query(
-          collection(db, "hackathon-management-1"),
-          where("isActive", "==", true)
-        );
-        const querySnapshot = await getDocs(q);
-        const activeHackathons: Hackathon[] = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
+    async function fetchHackathons() {
+      setLoading(true);
+      const hackathonsRef = collection(db, "hackathon-management-1");
+      const q = query(hackathonsRef, where("status", "==", filter));
+      const querySnapshot = await getDocs(q);
+      const hackathonData = querySnapshot.docs.map(
+        (doc) =>
+          ({
             id: doc.id,
-            title: data.name || "Untitled Hackathon",
-            description: data.description || "",
-            startDate: data.startDate?.toDate().toISOString() || "",
-            endDate: data.endDate?.toDate().toISOString() || "",
-            isActive: data.isActive || false,
-          } as Hackathon;
-        });
-        setHackathons(activeHackathons);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching active hackathons:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+            ...doc.data(),
+          } as Hackathon)
+      );
+      setHackathons(hackathonData);
+      setLoading(false);
+    }
 
-    fetchActiveHackathons();
-  }, []);
+    fetchHackathons();
+  }, [filter]);
+
+  const filteredHackathons = hackathons.filter((hackathon) =>
+    hackathon.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div
@@ -56,14 +57,36 @@ export default function HackathonList() {
             Discover and participate in exciting hackathons
           </p>
         </div>
+
+        <div className="flex mb-4">
+          <Input
+            type="text"
+            placeholder="Search hackathons..."
+            className="p-2 border rounded"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <select
+            className="ml-4 p-2 border rounded bg-black"
+            value={filter}
+            onChange={(e) =>
+              setFilter(e.target.value as "active" | "upcoming" | "past")
+            }
+          >
+            <option value="active">Active</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="past">Past</option>
+          </select>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8 w-full">
           {loading ? (
             <div className="col-span-1 lg:col-span-3 flex justify-center items-center w-full p-4">
               <PiSpinnerBold className="animate-spin text-2xl lg:text-4xl" />
             </div>
-          ) : (
-            hackathons.map((hackathon) => (
-              <div
+          ) : filteredHackathons ? (
+            filteredHackathons.map((hackathon) => (
+              <Link
+                href={`/hackathon/${hackathon.id}`}
                 key={hackathon.id}
                 className="border rounded-md bg-white/5 drop-shadow-md hover:bg-white/10 p-4 transition-all duration-500"
               >
@@ -83,8 +106,10 @@ export default function HackathonList() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))
+          ) : (
+            <div>No hackathons found</div>
           )}
         </div>
       </Container>

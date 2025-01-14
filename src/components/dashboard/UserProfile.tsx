@@ -1,17 +1,23 @@
-import React from "react";
-import Button from "../ui/Button";
-import { getAuth, signOut } from "firebase/auth";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getAuth, signOut } from "firebase/auth";
+import { useAuthContext } from "@/contexts/AuthContext";
+import Button from "../ui/Button";
 
-type UserProfileProps = {
-  user: {
-    uid: string | null;
-    email: string | null;
-  };
-};
-
-const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
+const UserProfile: React.FC = () => {
   const router = useRouter();
+  const { user } = useAuthContext();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      setName(user.displayName || "");
+      setEmail(user.email || "");
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     const auth = getAuth();
@@ -29,8 +35,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
       <section>
         <h2 className="text-xl font-semibold mb-4">User Profile</h2>
         <div className="flex flex-col gap-2 break-words">
-          <p>User ID: {user.uid}</p>
-          <p>Email: {user.email}</p>
+          <p>Name: {name}</p>
+          <p>Email: {email}</p>
+        </div>
+
+        <div className="py-4">
+          <Button onClick={() => router.push("/profile")} variant="secondary">
+            Profile
+          </Button>
         </div>
       </section>
 

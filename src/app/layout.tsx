@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { firaCode } from "./fonts";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
   title: "Hackathon Management",
@@ -18,7 +19,7 @@ export default function RootLayout({
       <body
         className={`${firaCode.className} font-firaCode bg-gray-950 text-white antialiased`}
       >
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
