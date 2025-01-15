@@ -12,4 +12,6 @@ export interface Hackathon {
   participants?: string[];
   status?: "active" | "upcoming" | "past";
   bannerUrl?: string;
+  published?: boolean;
+  thumbnailUrl?: string;
 }

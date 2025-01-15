@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaEdit } from "react-icons/fa";
 // prettier-ignore
-import { collection, query, getDocs, addDoc, Timestamp, doc, updateDoc, where, arrayUnion } from "firebase/firestore";
+import { collection, query, getDocs, addDoc, Timestamp, doc, updateDoc, arrayUnion, deleteDoc } from "firebase/firestore";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { db } from "@/lib/firebase";
 import { formatDate } from "@/utils/dateUtils";
@@ -40,37 +41,6 @@ export default function DashboardPage() {
   const fetchHackathons = async () => {
     if (!user) return;
 
-    // Fetch participated hackathons
-    const participatedQuery = query(
-      collection(db, "hackathon-management-1"),
-      where("participants", "array-contains", user.uid)
-    );
-    const participatedSnapshot = await getDocs(participatedQuery);
-    const participatedData = participatedSnapshot.docs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        } as Hackathon)
-    );
-    setParticipatedHackathons(participatedData);
-
-    // Fetch created hackathons
-    const createdQuery = query(
-      collection(db, "hackathon-management-1"),
-      where("creatorId", "==", user.uid)
-    );
-    const createdSnapshot = await getDocs(createdQuery);
-    const createdData = createdSnapshot.docs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          ...doc.data(),
-        } as Hackathon)
-    );
-    setCreatedHackathons(createdData);
-
-    // Fetch all hackathons
     const allHackathonsQuery = query(collection(db, "hackathon-management-1"));
     const allHackathonsSnapshot = await getDocs(allHackathonsQuery);
     const allHackathonsData = allHackathonsSnapshot.docs.map(
@@ -80,7 +50,16 @@ export default function DashboardPage() {
           ...doc.data(),
         } as Hackathon)
     );
-    setHackathons(allHackathonsData);
+
+    const participated = allHackathonsData.filter((h) =>
+      h.participants?.includes(user.uid)
+    );
+    const created = allHackathonsData.filter((h) => h.creatorId === user.uid);
+    const published = allHackathonsData.filter((h) => h.published);
+
+    setParticipatedHackathons(participated);
+    setCreatedHackathons(created);
+    setHackathons(published);
   };
 
   const toggleHackathonStatus = async (id: string) => {
@@ -91,10 +70,24 @@ export default function DashboardPage() {
     try {
       const docRef = doc(db, "hackathon-management-1", id);
       await updateDoc(docRef, { status: newStatus });
-      await fetchHackathons(); // Refresh hackathons after update
+      await fetchHackathons();
       console.log("Updated hackathon status successfully");
     } catch (error) {
       console.error("Error updating hackathon status:", error);
+    }
+  };
+
+  const toggleHackathonPublish = async (id: string) => {
+    const hackathon = createdHackathons.find((h) => h.id === id);
+    if (!hackathon || hackathon.creatorId !== user?.uid) return;
+
+    try {
+      const docRef = doc(db, "hackathon-management-1", id);
+      await updateDoc(docRef, { published: !hackathon.published });
+      await fetchHackathons();
+      console.log("Updated hackathon publish status successfully");
+    } catch (error) {
+      console.error("Error updating hackathon publish status:", error);
     }
   };
 
@@ -119,7 +112,7 @@ export default function DashboardPage() {
         });
         updatedHackathon.id = docRef.id;
       }
-      await fetchHackathons(); // Refresh hackathons after create/update
+      await fetchHackathons();
       console.log("Hackathon created/updated successfully");
     } catch (error) {
       console.error("Error creating/updating hackathon:", error);
@@ -138,10 +131,30 @@ export default function DashboardPage() {
       await updateDoc(docRef, {
         participants: arrayUnion(user.uid),
       });
-      await fetchHackathons(); // Refresh hackathons after joining
+      await fetchHackathons();
       console.log("Joined hackathon successfully");
     } catch (error) {
       console.error("Error joining hackathon:", error);
+    }
+  };
+  const handleDeleteHackathon = async (hackathonId: string) => {
+    if (!user) {
+      console.error("User must be logged in to delete a hackathon");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this hackathon? This action cannot be undone."
+    );
+    if (!confirmed) return;
+
+    try {
+      const docRef = doc(db, "hackathon-management-1", hackathonId);
+      await deleteDoc(docRef);
+      await fetchHackathons();
+      console.log("Deleted hackathon successfully");
+    } catch (error) {
+      console.error("Error deleting hackathon:", error);
     }
   };
 
@@ -165,7 +178,7 @@ export default function DashboardPage() {
     setIsModalOpen(true);
   };
 
-  console.log(createdHackathons, participatedHackathons);
+  console.log(participatedHackathons);
 
   if (!user) {
     return (
@@ -225,11 +238,31 @@ export default function DashboardPage() {
                 key={hackathon.id}
                 hackathon={hackathon}
                 onToggle={toggleHackathonStatus}
+                onPublishToggle={toggleHackathonPublish}
                 onEdit={() => openHackathonModal(hackathon)}
+                onDelete={() => handleDeleteHackathon(user.uid)}
                 isCreator={hackathon.creatorId === user.uid}
                 isParticipant={hackathon?.participants?.includes(user.uid)}
               />
             ))}
+          </div>
+
+          <div className="mt-8">
+            <h3 className="text-xl font-semibold mb-4">Your Hackathons</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {createdHackathons.map((hackathon) => (
+                <HackathonCard
+                  key={hackathon.id}
+                  hackathon={hackathon}
+                  onToggle={toggleHackathonStatus}
+                  onPublishToggle={toggleHackathonPublish}
+                  onEdit={() => openHackathonModal(hackathon)}
+                  onDelete={() => handleDeleteHackathon(hackathon.id)}
+                  isCreator={true}
+                  isParticipant={true}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -243,7 +276,6 @@ export default function DashboardPage() {
         isCreator={
           selectedHackathon ? selectedHackathon.creatorId === user.uid : true
         }
-        // isParticipant={selectedHackathon ? selectedHackathon.participants?.includes(user.uid) : false}
       />
     </div>
   );
@@ -252,34 +284,41 @@ export default function DashboardPage() {
 const HackathonCard = ({
   hackathon,
   onToggle,
+  onPublishToggle,
   onEdit,
+  onDelete,
   isCreator,
   isParticipant,
 }: {
   hackathon: Hackathon;
   onToggle: (id: string) => void;
+  onPublishToggle: (id: string) => void;
   onEdit: () => void;
+  onDelete: () => void;
   isCreator: boolean;
   isParticipant: boolean | undefined;
 }) => {
   return (
     <div className="relative border rounded-md bg-white/5 drop-shadow-md hover:bg-white/10 p-4 transition-all duration-500">
+      {hackathon.thumbnailUrl && (
+        <div className="mb-4">
+          <Image
+            src={hackathon.thumbnailUrl}
+            alt={hackathon.title}
+            width={300}
+            height={200}
+            className="w-full h-40 object-cover rounded-md"
+          />
+        </div>
+      )}
       <div className="flex justify-between items-start gap-2">
         <p className="text-lg lg:text-2xl font-bold">{hackathon.title}</p>
         <div className="flex gap-2">
           {isCreator && (
-            <button
-              onClick={() => onToggle(hackathon.id)}
-              className={`px-2 py-2 text-xs rounded-md text-white ${
-                hackathon.status === "active" ? "bg-green-600" : "bg-red-600"
-              } hover:opacity-80`}
-            >
-              {hackathon.status === "active" ? "Deactivate" : "Activate"}
+            <button onClick={onEdit} className="text-xl lg:text-xl z-50">
+              <FaEdit />
             </button>
           )}
-          <button onClick={onEdit} className="text-xl lg:text-2xl z-50">
-            <FaEdit />
-          </button>
         </div>
       </div>
       <p className="mt-2 text-sm lg:text-base">{hackathon.description}</p>
@@ -293,15 +332,50 @@ const HackathonCard = ({
       </div>
 
       {isParticipant && (
-        <div className="mt-2 text-sm text-green-500">
-          You are participating in this hackathon{" "}
+        <div className="mt-4 text-sm text-green-500">
+          You are participating in this hackathon
         </div>
       )}
       {!isParticipant && (
-        <div className="mt-2 text-sm text-red-500">
+        <div className="mt-4 text-sm text-red-500">
           You are not participating in this hackathon
         </div>
       )}
+
+      <div className="mt-4">
+        {isCreator ? (
+          <div className="flex gap-2 lg:gap-3">
+            <Button
+              onClick={() => onToggle(hackathon.id)}
+              className={`capitalize ${
+                hackathon.status === "active" ? "bg-green-600" : "bg-red-600"
+              } hover:opacity-80`}
+            >
+              {hackathon.status}
+            </Button>
+            <Button
+              onClick={() => onPublishToggle(hackathon.id)}
+              className={`${
+                hackathon.published ? "bg-red-600" : "bg-green-600"
+              } hover:opacity-80`}
+            >
+              {hackathon.published ? "Unpublish" : "Publish"}
+            </Button>
+
+            <Button onClick={onDelete} className="bg-red-600 hover:opacity-80">
+              Delete
+            </Button>
+          </div>
+        ) : (
+          <Button
+            className={`capitalize ${
+              hackathon.status === "active" ? "bg-green-600" : "bg-red-600"
+            } hover:opacity-80`}
+          >
+            {hackathon.status}
+          </Button>
+        )}
+      </div>
 
       <Link href={`/hackathon/${hackathon.id}`}>
         <Button className="mt-4">View Hackathon</Button>

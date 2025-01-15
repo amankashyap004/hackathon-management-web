@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-// prettier-ignore
+import Image from "next/image";
 import { addDoc, collection, updateDoc, doc, arrayUnion } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { db } from "@/lib/firebase";
+import { db, storage } from "@/lib/firebase";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { Hackathon } from "@/types";
@@ -33,8 +34,10 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
   const [registrationDeadline, setRegistrationDeadline] = useState("");
   const [rules, setRules] = useState("");
   const [prizes, setPrizes] = useState("");
-  // prettier-ignore
   const [status, setStatus] = useState<"upcoming" | "active" | "past" | undefined>("upcoming");
+  const [published, setPublished] = useState(false);
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const { user } = useAuthContext();
 
   useEffect(() => {
@@ -47,6 +50,8 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
       setRules(hackathon.rules || "");
       setPrizes(hackathon.prizes || "");
       setStatus(hackathon.status || "upcoming");
+      setPublished(hackathon.published || false);
+      setThumbnailPreview(hackathon.thumbnailUrl || null);
     } else {
       resetForm();
     }
@@ -61,12 +66,35 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
     setRules("");
     setPrizes("");
     setStatus("upcoming");
+    setPublished(false);
+    setThumbnail(null);
+    setThumbnailPreview(null);
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setThumbnail(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setThumbnailPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async () => {
     if (!user) {
       console.error("User must be logged in to create or edit a hackathon");
       return;
+    }
+
+    let thumbnailUrl = hackathon?.thumbnailUrl || "";
+
+    if (thumbnail) {
+      const storageRef = ref(storage, `hackathon_thumbnails/${Date.now()}_${thumbnail.name}`);
+      await uploadBytes(storageRef, thumbnail);
+      thumbnailUrl = await getDownloadURL(storageRef);
     }
 
     const hackathonData: Omit<Hackathon, "id" | "participantCount"> = {
@@ -78,6 +106,10 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
       rules,
       prizes,
       status,
+      published,
+      thumbnailUrl,
+      creatorId: user.uid,
+      participants: hackathon?.participants || [user.uid],
     };
 
     try {
@@ -90,14 +122,13 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
         onCreate({
           ...hackathonData,
           id: hackathon.id,
-          participantCount: hackathon.participantCount,
+          participantCount: hackathon?.participants?.length,
         });
-      } else if (!hackathon) {
+      } else {
         // Create new hackathon
         const docRef = await addDoc(collection(db, "hackathon-management-1"), {
           ...hackathonData,
-          creatorId: user.uid,
-          participants: [user.uid],
+          createdAt: new Date().toISOString(),
         });
         onCreate({ ...hackathonData, id: docRef.id, participantCount: 1 });
       }
@@ -128,7 +159,7 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-lg">
-      <div className=" bg-white/10 p-4 lg:p-6 rounded-md shadow-md w-full lg:w-2/3 h-[85vh] overflow-auto">
+      <div className="bg-white/10 p-4 lg:p-6 rounded-md shadow-md w-full lg:w-2/3 h-[85vh] overflow-auto">
         <div className="flex flex-col gap-4">
           <h2 className="text-xl font-semibold mb-4">
             {hackathon
@@ -208,6 +239,41 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
             <option value="active">Active</option>
             <option value="past">Past</option>
           </select>
+          {isCreator && (
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="published"
+                checked={published}
+                onChange={(e) => setPublished(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="published">
+                {published ? "Unpublish Hackathon" : "Publish Hackathon"}
+              </label>
+            </div>
+          )}
+          <div className="flex flex-col items-start">
+            <label htmlFor="thumbnail" className="mb-2">Thumbnail Image</label>
+            <input
+              type="file"
+              id="thumbnail"
+              accept="image/*"
+              onChange={handleThumbnailChange}
+              className="mb-2"
+              disabled={!isCreator && !!hackathon}
+            />
+            {thumbnailPreview && (
+              <Image
+                src={thumbnailPreview}
+                alt="Thumbnail preview"
+                width={100}
+                height={100}
+                quality={100}
+                className="w-32 h-32 object-cover rounded-md"
+              />
+            )}
+          </div>
           <div className="flex justify-end w-full">
             <div className="flex gap-4 w-full md:w-1/2">
               <Button onClick={onClose} className="w-full">
