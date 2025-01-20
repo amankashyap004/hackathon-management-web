@@ -14,4 +14,5 @@ export interface Hackathon {
   bannerUrl?: string;
   published?: boolean;
   thumbnailUrl?: string;
+  isParticipant?: boolean;
 }

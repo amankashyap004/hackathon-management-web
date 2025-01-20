@@ -2,7 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { addDoc, collection, updateDoc, doc, arrayUnion } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  updateDoc,
+  doc,
+  arrayUnion,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { db, storage } from "@/lib/firebase";
@@ -34,7 +40,9 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
   const [registrationDeadline, setRegistrationDeadline] = useState("");
   const [rules, setRules] = useState("");
   const [prizes, setPrizes] = useState("");
-  const [status, setStatus] = useState<"upcoming" | "active" | "past" | undefined>("upcoming");
+  const [status, setStatus] = useState<
+    "upcoming" | "active" | "past" | undefined
+  >("upcoming");
   const [published, setPublished] = useState(false);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
@@ -71,6 +79,25 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
     setThumbnailPreview(null);
   };
 
+  // Update status when dates change
+  useEffect(() => {
+    const updateStatus = () => {
+      const today = new Date();
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      if (start > today) {
+        setStatus("upcoming");
+      } else if (start <= today && end >= today) {
+        setStatus("active");
+      } else if (end < today) {
+        setStatus("past");
+      }
+    };
+
+    updateStatus();
+  }, [startDate, endDate]);
+
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -92,7 +119,10 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
     let thumbnailUrl = hackathon?.thumbnailUrl || "";
 
     if (thumbnail) {
-      const storageRef = ref(storage, `hackathon_thumbnails/${Date.now()}_${thumbnail.name}`);
+      const storageRef = ref(
+        storage,
+        `hackathon_thumbnails/${Date.now()}_${thumbnail.name}`
+      );
       await uploadBytes(storageRef, thumbnail);
       thumbnailUrl = await getDownloadURL(storageRef);
     }
@@ -145,7 +175,7 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
     }
 
     try {
-      await updateDoc(doc(db, "hackathons", hackathon.id), {
+      await updateDoc(doc(db, "hackathon-management-1", hackathon.id), {
         participants: arrayUnion(user.uid),
       });
       onJoin(hackathon.id);
@@ -158,7 +188,7 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-lg">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-lg mt-8 lg:mt-0">
       <div className="bg-white/10 p-4 lg:p-6 rounded-md shadow-md w-full lg:w-2/3 h-[85vh] overflow-auto">
         <div className="flex flex-col gap-4">
           <h2 className="text-xl font-semibold mb-4">
@@ -254,7 +284,9 @@ const CreateHackathon: React.FC<CreateHackathonProps> = ({
             </div>
           )}
           <div className="flex flex-col items-start">
-            <label htmlFor="thumbnail" className="mb-2">Thumbnail Image</label>
+            <label htmlFor="thumbnail" className="mb-2">
+              Thumbnail Image
+            </label>
             <input
               type="file"
               id="thumbnail"
