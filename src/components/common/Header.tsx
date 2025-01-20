@@ -11,7 +11,7 @@ import Button from "../ui/Button";
 
 const navItems = [
   { name: "Home", href: "/" },
-  { name: "Hackathons List", href: "#hackathons-list" },
+  { name: "Hackathon List", href: "/hackathon" },
 ];
 
 const Header: React.FC = () => {
