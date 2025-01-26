@@ -11,7 +11,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
 export default function Profile() {
-  const { user } = useAuthContext();
+  const { user, isReadOnly } = useAuthContext();
   const router = useRouter();
   const [name, setName] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
@@ -117,7 +117,7 @@ export default function Profile() {
           onChange={(e) => setPhoto(e.target.files ? e.target.files[0] : null)}
           className="mb-4 w-full"
         />
-        <Button type="submit" variant="secondary">
+        <Button type="submit" variant="secondary" disabled={isReadOnly}>
           Update Profile
         </Button>
       </form>
@@ -140,7 +140,9 @@ export default function Profile() {
           className="mb-4 w-full"
         />
 
-        <Button type="submit">Change Password</Button>
+        <Button type="submit" disabled={isReadOnly}>
+          Change Password
+        </Button>
       </form>
 
       <div>
@@ -151,6 +153,7 @@ export default function Profile() {
         </p>
         <Button
           onClick={handleDeleteAccount}
+          disabled={isReadOnly}
           className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
         >
           Delete Account

@@ -13,6 +13,7 @@ const HackathonCard = ({
   onDelete,
   isCreator,
   isParticipant,
+  isReadOnly,
 }: {
   hackathon: Hackathon;
   onPublishToggle: (id: string) => void;
@@ -20,6 +21,7 @@ const HackathonCard = ({
   onDelete: () => void;
   isCreator: boolean;
   isParticipant: boolean | undefined;
+  isReadOnly?: boolean;
 }) => {
   return (
     <div className="relative border rounded-md bg-white/5 drop-shadow-md hover:bg-white/10 p-4 transition-all duration-500">
@@ -38,7 +40,13 @@ const HackathonCard = ({
         <p className="text-lg lg:text-2xl font-bold">{hackathon.title}</p>
         <div className="flex gap-2">
           {isCreator && (
-            <button onClick={onEdit} className="text-xl lg:text-xl z-50">
+            <button
+              onClick={onEdit}
+              disabled={isReadOnly}
+              className={`text-xl lg:text-xl z-50 ${
+                isReadOnly ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+              }`}
+            >
               <FaEdit />
             </button>
           )}
@@ -67,7 +75,7 @@ const HackathonCard = ({
 
       <div className="mt-4">
         {isCreator ? (
-          <div className="flex gap-2 lg:gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
             <Button
               className={`capitalize ${
                 hackathon.status === "active" ? "bg-green-600" : "bg-red-600"
@@ -77,6 +85,7 @@ const HackathonCard = ({
             </Button>
             <Button
               onClick={() => onPublishToggle(hackathon.id)}
+              disabled={isReadOnly}
               className={`${
                 hackathon.published ? "bg-red-600" : "bg-green-600"
               } hover:opacity-80`}
@@ -84,7 +93,11 @@ const HackathonCard = ({
               {hackathon.published ? "Unpublish" : "Publish"}
             </Button>
 
-            <Button onClick={onDelete} className="bg-red-600 hover:opacity-80">
+            <Button
+              onClick={onDelete}
+              disabled={isReadOnly}
+              className="col-span-2 lg:col-span-1 bg-red-600 hover:opacity-80"
+            >
               Delete
             </Button>
           </div>

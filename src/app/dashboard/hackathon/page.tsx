@@ -14,7 +14,7 @@ import { Hackathon } from "@/types";
 import { PiSpinnerBold } from "react-icons/pi";
 
 export default function DashboardPage() {
-  const { user } = useAuthContext();
+  const { user, isReadOnly } = useAuthContext();
   const router = useRouter();
 
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
@@ -49,11 +49,18 @@ export default function DashboardPage() {
         } as Hackathon)
     );
 
+    // Hackathons created by the current user (published + unpublished)
+    const created = allHackathonsData.filter((h) => h.creatorId === user.uid);
+
+    // Hackathons the user is participating in
     const participated = allHackathonsData.filter((h) =>
       h.participants?.includes(user.uid)
     );
-    const created = allHackathonsData.filter((h) => h.creatorId === user.uid);
-    const published = allHackathonsData.filter((h) => h.published);
+
+    // Only published hackathons for general view
+    const published = allHackathonsData.filter(
+      (h) => h.published || h.creatorId === user.uid // Show unpublished for creators
+    );
 
     setParticipatedHackathons(participated);
     setCreatedHackathons(created);
@@ -81,8 +88,6 @@ export default function DashboardPage() {
       console.error("User must be logged in to create or update a hackathon");
       return;
     }
-
-
 
     try {
       if (updatedHackathon.id) {
@@ -177,6 +182,8 @@ export default function DashboardPage() {
     setIsModalOpen(true);
   };
 
+  console.log(isReadOnly);
+
   if (!user) {
     return (
       <div className="flex flex-col justify-center items-center gap-8 h-screen">
@@ -210,6 +217,7 @@ export default function DashboardPage() {
                 variant="secondary"
                 className="w-auto"
                 onClick={() => openHackathonModal(null)}
+                disabled={isReadOnly}
               >
                 Create Hackathon
               </Button>
@@ -255,6 +263,7 @@ export default function DashboardPage() {
                 onDelete={() => handleDeleteHackathon(user.uid)}
                 isCreator={hackathon.creatorId === user.uid}
                 isParticipant={hackathon?.participants?.includes(user.uid)}
+                isReadOnly={isReadOnly}
               />
             ))}
           </div>

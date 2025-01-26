@@ -12,21 +12,29 @@ interface Hackathon {
   startDate: string;
   endDate: string;
   isParticipant: boolean;
+  published: boolean;
+  status: string;
 }
 
 // Define Stats type
 interface Stats {
   totalHackathons: number;
+  activeHackathons: number;
   upcomingHackathons: number;
   pastHackathons: number;
+  publishedHackathons: number;
+  unpublishedHackathons: number;
 }
 
 export default function DashboardPage() {
   const { user } = useAuthContext();
   const [stats, setStats] = useState<Stats>({
     totalHackathons: 0,
+    activeHackathons: 0,
     upcomingHackathons: 0,
     pastHackathons: 0,
+    publishedHackathons: 0,
+    unpublishedHackathons: 0,
   });
 
   useEffect(() => {
@@ -47,18 +55,27 @@ export default function DashboardPage() {
       startDate: item.startDate || "",
       endDate: item.endDate || "",
       isParticipant: item.isParticipant || false,
+      published: item.published || false,
+      status: item.status || "inactive",
     }));
 
     const now = new Date();
-    const upcomingHackathons = hackathons.filter(
-      (h) => new Date(h.startDate) > now
-    );
+
+    // prettier-ignore
+    const activeHackathons = hackathons.filter((h) => new Date(h.startDate) <= now && new Date(h.endDate) >= now && h.status === "active");
+    // prettier-ignore
+    const upcomingHackathons = hackathons.filter((h) => new Date(h.startDate) > now);
     const pastHackathons = hackathons.filter((h) => new Date(h.endDate) < now);
+    const publishedHackathons = hackathons.filter((h) => h.published);
+    const unpublishedHackathons = hackathons.filter((h) => !h.published);
 
     setStats({
       totalHackathons: hackathons.length,
+      activeHackathons: activeHackathons.length,
       upcomingHackathons: upcomingHackathons.length,
       pastHackathons: pastHackathons.length,
+      publishedHackathons: publishedHackathons.length,
+      unpublishedHackathons: unpublishedHackathons.length,
     });
   };
 
@@ -73,6 +90,10 @@ export default function DashboardPage() {
           <h3 className="font-semibold">Total Hackathons</h3>
           <p>{stats.totalHackathons}</p>
         </div>
+        <div className="p-4 bg-pink-900 rounded w-full">
+          <h3 className="font-semibold">Active Hackathons</h3>
+          <p>{stats.activeHackathons}</p>
+        </div>
         <div className="p-4 bg-green-900 rounded">
           <h3 className="font-semibold">Upcoming Hackathons</h3>
           <p>{stats.upcomingHackathons}</p>
@@ -80,6 +101,14 @@ export default function DashboardPage() {
         <div className="p-4 bg-red-900 rounded">
           <h3 className="font-semibold">Past Hackathons</h3>
           <p>{stats.pastHackathons}</p>
+        </div>
+        <div className="p-4 bg-yellow-900 rounded w-full">
+          <h3 className="font-semibold">Published Hackathons</h3>
+          <p>{stats.publishedHackathons}</p>
+        </div>
+        <div className="p-4 bg-orange-900 rounded w-full">
+          <h3 className="font-semibold">Unpublished Hackathons</h3>
+          <p>{stats.unpublishedHackathons}</p>
         </div>
       </div>
     </div>

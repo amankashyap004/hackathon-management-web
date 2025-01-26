@@ -12,19 +12,18 @@ import Container from "@/components/wrappers/Container";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
-
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { user } = useAuthContext();
+  const { user, isReadOnly, setUser } = useAuthContext();
 
   useEffect(() => {
     if (user) {
       router.push("/dashboard");
     }
-  }, [user, router]);
+  }, [user, isReadOnly, router]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,9 +33,18 @@ const Login = () => {
       return;
     }
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push("/dashboard");
-      console.log("User logged in successfully");
+      const { user: loggedInUser } = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      setUser(loggedInUser);
+      if (email === "demo1@hackathonmanagementweb.com") {
+        alert("You are logged in as a read-only user.");
+      } else {
+        router.push("/dashboard");
+        console.log("User logged in successfully");
+      }
     } catch (error) {
       setError("Failed to log in");
       console.error("Error logging in:", error);
@@ -46,8 +54,13 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      router.push("/dashboard");
+      const { user: loggedInUser } = await signInWithPopup(auth, provider);
+      setUser(loggedInUser);
+      if (loggedInUser.email === "demo1@hackathonmanagementweb.com") {
+        alert("You are logged in as a read-only user.");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (error) {
       setError("Failed to log in with Google");
       console.error("Error logging in with Google:", error);

@@ -11,8 +11,10 @@ import Container from "@/components/wrappers/Container";
 import Input from "@/components/ui/Input";
 import { Hackathon } from "@/types";
 import Button from "@/components/ui/Button";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 export default function Hackathons() {
+  const { user } = useAuthContext();
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
   const [loading, setLoading] = useState(true);
   // prettier-ignore
@@ -39,7 +41,13 @@ export default function Hackathons() {
             ...doc.data(),
           } as Hackathon)
       );
-      setHackathons(hackathonData);
+
+      // Filter published and unpublished hackathons
+      const published = hackathonData.filter(
+        (h) => h.published || h.creatorId === user?.uid // Show unpublished for creators
+      );
+      
+      setHackathons(published);
       setLoading(false);
     }
 
@@ -116,7 +124,7 @@ export default function Hackathons() {
                         Registration Deadline {hackathon?.registrationDeadline}
                       </p>
                     </div>
-                    <Button> View</Button>
+                    <Button>View</Button>
                   </div>
                 </Link>
               ))

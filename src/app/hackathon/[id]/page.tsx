@@ -14,7 +14,7 @@ import { PiSpinnerBold } from "react-icons/pi";
 
 export default function HackathonDetails() {
   const { id } = useParams();
-  const { user } = useAuthContext();
+  const { user, isReadOnly } = useAuthContext();
   const router = useRouter();
   // prettier-ignore
   const [hackathon, setHackathon] = useState<Hackathon | null | undefined>(null);
@@ -164,6 +164,7 @@ export default function HackathonDetails() {
                       ? "bg-red-500 hover:bg-red-600"
                       : "bg-green-500 hover:bg-green-600"
                   } text-white`}
+                  disabled={isReadOnly}
                 >
                   {user
                     ? isParticipant

@@ -6,6 +6,7 @@ interface ButtonProps {
   type?: "button" | "submit" | "reset";
   className?: string;
   variant?: "primary" | "secondary";
+  disabled?: boolean;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -14,6 +15,7 @@ const Button: React.FC<ButtonProps> = ({
   className = "",
   type = "button",
   variant = "primary",
+  disabled = false,
 }) => {
   const variants = {
     primary:
@@ -26,7 +28,12 @@ const Button: React.FC<ButtonProps> = ({
     <button
       onClick={onClick}
       type={type}
-      className={`flex justify-center items-center gap-2 px-6 py-3 text-sm font-bold rounded-2xl drop-shadow-md transition-all duration-300 w-full text-nowrap active:scale-105 hover:opacity-85 ${variants[variant]} ${className}`}
+      disabled={disabled}
+      className={`flex justify-center items-center gap-2 px-6 py-3 text-sm font-bold rounded-2xl drop-shadow-md transition-all duration-300 w-full text-nowrap active:scale-105 hover:opacity-85 ${
+        variants[variant]
+      } ${className} ${
+        disabled ? "cursor-not-allowed opacity-50 hover:opacity-50" : "cursor-pointer"
+      }`}
     >
       {children}
     </button>
